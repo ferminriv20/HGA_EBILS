@@ -8,7 +8,7 @@ Facilita la implementación y prueba de configuraciones sin necesidad de modific
 
 import numpy as np
 from GeneticAlgorithm_V2 import AlgoritmoGenetico
-from Algorith_pMP import evaluar_poblacion, poblacion_inicial_combinaciones, selecciona_torneo, cruzamiento_intercambio , mutacion_simple_Swap, criterio_reinicio_adaptive, accion_reinicio, criterio_parada_estancamiento, _local_search_1_Swap_jit, Iterated_Local_Search  
+from Algorith_pMP import evaluar_poblacion, poblacion_inicial_combinaciones, selecciona_torneo, cruzamiento_intercambio , mutacion_simple_Swap, criterio_reinicio_adaptive, accion_reinicio, criterio_parada_estancamiento, _local_search_1_Swap_jit, iterated_local_search_intensification, Iterated_Local_Search
 
 
 def pmedian_hybrid( cost_matrix: np.ndarray, p: int, num_iteraciones: int , pop_size: int , seleccion : callable , cruzamiento: callable, mutacion:callable,   para_seleccion :dict , para_cruzamiento: dict, para_mutacion : dict,  prob_cruzamiento: float , prob_mutacion: float , max_estancamiento: int ,max_gen: int  ,min_gener: int ,  maximizar: bool = False) -> dict:
@@ -24,13 +24,13 @@ def pmedian_hybrid( cost_matrix: np.ndarray, p: int, num_iteraciones: int , pop_
         if seleccion  == 'selecciona_torneo':
             seleccion_fun = selecciona_torneo
             # poner valor por defecto si no se pasó
-            para_seleccion = {**{"num_competidores": 8}, **para_seleccion} 
+            para_seleccion = {**{"num_competidores": 11}, **para_seleccion} 
         else:
             raise ValueError("param 'seleccion' debe ser 'selecciona_torneo' o una función callable")
     elif callable(seleccion):
         seleccion_fun = seleccion
         if seleccion is selecciona_torneo and not para_seleccion:
-            para_seleccion = {"num_competidores": 8}
+            para_seleccion = {"num_competidores": 11}
     else:
         raise ValueError("param 'seleccion' inválido")
 
@@ -69,8 +69,11 @@ def pmedian_hybrid( cost_matrix: np.ndarray, p: int, num_iteraciones: int , pop_
     
     
     # Búsqueda local para el mejor(es) individuo(s)
-    local_search_Elite = Iterated_Local_Search
-    para_local_search_Elite = { "cost_matrix": cost_matrix}
+    # local_search_Elite = Iterated_Local_Search
+    # para_local_search_Elite = { "cost_matrix": cost_matrix}
+    
+    local_search_Elite = iterated_local_search_intensification
+    para_local_search_Elite =  {'cost_matrix': cost_matrix }
    
     # Criterios de parada y reinicio
     criterio_parada = criterio_parada_estancamiento(max_gen, min_gener)
@@ -98,7 +101,7 @@ def pmedian_hybrid( cost_matrix: np.ndarray, p: int, num_iteraciones: int , pop_
         criterio_parada= criterio_parada,
         criterio_reinicio= criterio_reinicio,
         reinicio_poblacion= accion_reinicio_,
-        ratio_reinicio= 0.9,
+        ratio_reinicio= 0.0,
         paso_reinicio= 0.0,
     ).run()
 
@@ -123,7 +126,7 @@ if __name__ == "__main__":
         seleccion= selecciona_torneo,
         cruzamiento= cruzamiento_intercambio,
         mutacion= mutacion_simple_Swap,
-        prob_mutacion= 0.6,
+        prob_mutacion= 0.05,
         prob_cruzamiento= 0.95,
         para_seleccion= {},
         para_cruzamiento= {},

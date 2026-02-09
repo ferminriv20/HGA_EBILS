@@ -8,17 +8,17 @@ y se implementa un mecanismo de checkpoint para guardar el progreso de forma per
 
 """
 
-import hyperopt
+
 import openpyxl
 import os
 import numpy as np
 from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
 from pMP_hybrid_GA import pmedian_hybrid 
 import pickle
-
+ 
 
 TRIALS_FILE = "hyperopt_trials_pmed.pkl"  # archivo donde se guardan los trials
-checkpoint = 5  # guardar cada 5 evaluaciones 
+checkpoint = 10  # guardar cada 10 evaluaciones 
 counter = 0      # contador de evaluaciones
 
 
@@ -148,7 +148,7 @@ def objective(params):
     # Medida de tendencia central para normalizar resultados
     best_optimum = medida_tendencia(results)
 
-    #checkpoint periódico
+    #checkpoint periódico  
     counter+= 1
     # Guardar estado de trials cada checkpoint evaluaciones
     if (counter % checkpoint == 0) and 'trials' in globals():
@@ -162,7 +162,7 @@ def objective(params):
     return {'loss': best_optimum, 'status': STATUS_OK}
 
 
-def space(medida_tendencia, iteraciones= 1, tam_max= 400):
+def space(medida_tendencia, iteraciones= 500, tam_max= 500):
     '''
     Define el espacio de búsqueda de hiperparámetros.
     '''
@@ -187,7 +187,7 @@ def space(medida_tendencia, iteraciones= 1, tam_max= 400):
 
 
 # Número total de evaluaciones
-n_evals =  10 #2000
+n_evals =  1000 #2000
 medida = average # Medida de tendencia central a usar
 
 # Cargar trials previos si existen (reanudación)
