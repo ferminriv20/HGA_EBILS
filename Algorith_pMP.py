@@ -9,7 +9,7 @@ rendimiento computacional.
 
 """
 
-import numba
+
 import numpy as  np 
 from numba import jit, njit, prange
 from GeneticAlgorithm_V2 import AlgoritmoGenetico
@@ -572,6 +572,61 @@ def Iterated_Local_Search(individuo: np.ndarray, cost_matrix: np.ndarray) -> np.
     # Si el salto no sirvió, nos quedamos con el óptimo local original
     return ind_pulido
 
+def iterated_local_search_intensification(individuo: np.ndarray, cost_matrix: np.ndarray) -> np.ndarray:
+    """
+    Iterated Local Search con perturbaciones de intensidad creciente.
+    Aplica búsqueda local 1-swap seguida de perturbaciones progresivamente
+    más agresivas para escapar de óptimos locales.
+    
+    Args:
+        individuo: Vector 1D con índices de instalaciones seleccionadas.
+        cost_matrix: Matriz de distancias clientes - instalaciones (n x n).
+    
+    returns:
+        np.ndarray: Individuo mejorado tras aplicar ILS con intensificación.
+    
+    """
+    mejor_ind = individuo.copy()
+    facilities = cost_matrix.shape[1]
+    
+    # Evaluación inicial
+    costo_original = evaluar_individuo_rapido(mejor_ind, cost_matrix)
+    
+    # Pulido Exhaustivo Inicial (con límite)
+    ind_pulido, costo_pulido = _local_search_1_Swap_jit(mejor_ind, cost_matrix, max_iter=10)
+    
+    if costo_pulido < costo_original - 1e-6:
+        # Si hubo mejora en la fase inicial, retornamos el individuo pulido
+        return ind_pulido
+    
+    # VNS Reactivo (escapar de óptimo local)
+    p = individuo.size
+    mejor_escapado = ind_pulido.copy()
+    mejor_costo = costo_pulido
+    
+    for intento in range(4): #3 intentos de escape
+        # Perturbación incremental: k aumenta con intentos
+        k_destruir = min(2 + intento, max(2, p // 3))  # 2, 3, 4 cambios
+        
+        vecino_kick = ind_pulido.copy()
+        idxs_fuera = np.random.choice(p, k_destruir, replace=False)
+        
+        disponibles = np.setdiff1d(np.arange(facilities), vecino_kick, assume_unique=True)
+        nuevos = np.random.choice(disponibles, k_destruir, replace=False)
+        
+        vecino_kick[idxs_fuera] = nuevos
+        vecino_kick.sort()
+        
+        # Reparar con local search (menos iteraciones que la fase inicial)
+        vecino_reparado, costo_reparado = _local_search_1_Swap_jit(vecino_kick, cost_matrix,  max_iter=5)
+        
+        if costo_reparado < mejor_costo - 1e-6:
+            mejor_escapado = vecino_reparado
+            mejor_costo = costo_reparado
+    
+    return mejor_escapado
+
+
 
 if __name__ == '__main__':
     
@@ -604,16 +659,14 @@ if __name__ == '__main__':
             seleccion= selecciona_torneo,
             cruzamiento = cruzamiento_intercambio,
             mutacion=  mutacion_simple_Swap,
-            busqueda_elite= Iterated_Local_Search,
-            prob_mutacion= 0.6,
+            busqueda_elite= iterated_local_search_intensification,
+            prob_mutacion= 0.05,
             prob_cruzamiento= 0.95,
             para_evaluacion= {'cost_matrix': MATRIX},
-            para_seleccion= {'num_competidores': 12}, #torneo
-            # para_seleccion= {}, #ruleta
+            para_seleccion= {'num_competidores': 8}, 
             para_cruzamiento= {'facilities': FACILITIES },
-            para_mutacion= {'facilities': FACILITIES }, #mutación simple              
-            # para_mutacion= {'cost_matrix': MATRIX, 'num_vecinos_cercanos': 20 }, #mutación geográfica
-            para_busqueda_elite= {'cost_matrix': MATRIX }, #mutación por búsqueda local
+            para_mutacion= {'facilities': FACILITIES },         
+            para_busqueda_elite= {'cost_matrix': MATRIX }, 
             criterio_parada= criterio_parada_config,
             criterio_reinicio= criterio_reinicio_config,
             reinicio_poblacion= accion_reinicio_config,
