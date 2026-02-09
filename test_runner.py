@@ -10,10 +10,10 @@ from pMP_hybrid_GA import pmedian_hybrid
 # Número de réplicas por instancia
 REPLICAS = 10
 # Parámetros del GA 
-NUM_ITERACIONES = 400 # generaciones
-POP_SIZE = 500   # tamaño de población
-PROB_CRUZAMIENTO = 0.95 
-PROB_MUTACION = 0.05
+NUM_ITERACIONES = 500 # generaciones
+POP_SIZE = 451 # tamaño de población
+PROB_CRUZAMIENTO = 0.69
+PROB_MUTACION = 0.39
 # Parámetros de Parada (Estancamiento)
 MAX_GEN = 100 # Si no mejora en 100 gens  entonces el algoritmo se detiene
 MIN_GENER = 0 # Corre al menos 0 gens
@@ -29,45 +29,45 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Diccionario con las instancias de p-median y su valor de p
 test = {
-    # "pmed1": 5,
-    # "pmed2": 10,
-    # "pmed3": 10,
-    # "pmed4": 20,
-    # "pmed5": 33,
-    # "pmed6": 5,
-    # "pmed7": 10,
-    # "pmed8": 20,
+    "pmed1": 5,
+    "pmed2": 10,
+    "pmed3": 10,
+    "pmed4": 20,
+    "pmed5": 33,
+    "pmed6": 5,
+    "pmed7": 10,
+    "pmed8": 20,
     "pmed9": 40,
     "pmed10": 67,
-    # "pmed11": 5,
-    # "pmed12": 10,
-    # "pmed13": 30,
+    "pmed11": 5,
+    "pmed12": 10,
+    "pmed13": 30,
     "pmed14": 60,
     "pmed15": 100,
-    # "pmed16": 5,
-    # "pmed17": 10,
+    "pmed16": 5,
+    "pmed17": 10,
     "pmed18": 40,
     "pmed19": 80,
     "pmed20": 133,
-    # "pmed21": 5,
-    # "pmed22": 10,
+    "pmed21": 5,
+    "pmed22": 10,
     "pmed23": 50,
     "pmed24": 100,
     "pmed25": 167,
-    # "pmed26": 5,
-    # "pmed27": 10,
+    "pmed26": 5,
+    "pmed27": 10,
     "pmed28": 60,
     "pmed29": 120,
     "pmed30": 200,
-    # "pmed31": 5,
-    # "pmed32": 10,
+    "pmed31": 5,
+    "pmed32": 10,
     "pmed33": 70,
     "pmed34": 140,
-    # "pmed35": 5,
-    # "pmed36": 10,
+    "pmed35": 5,
+    "pmed36": 10,
     "pmed37": 80,
-    # "pmed38": 5,
-    # "pmed39": 10,
+    "pmed38": 5,
+    "pmed39": 10,
     "pmed40": 90,
 }
 
@@ -107,6 +107,7 @@ for inst_name, p in test.items():
             mutacion= mutacion_simple_Swap,
             para_seleccion= {},     # se rellenan por defecto 
             para_mutacion= {},
+            para_cruzamiento= {},
             prob_cruzamiento= PROB_CRUZAMIENTO,
             prob_mutacion= PROB_MUTACION,
             max_estancamiento= MAX_ESTANCAMIENTO,
